@@ -3,7 +3,7 @@ Hier ist eine kürzere Version der `README.md`:
 ```markdown
 # Sudachi Installer & Uninstaller
 
-This project provides an installer and uninstaller for the **Sudachi** application. It also detects and removes related applications like **Suyu** and **Yuzu**.
+This project provides an installer and uninstaller for the **Sudachi** application.
 
 ## Features
 
