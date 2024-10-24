@@ -1,3 +1,4 @@
-colorama
+py7zr
 requests
 tqdm
+colorama
