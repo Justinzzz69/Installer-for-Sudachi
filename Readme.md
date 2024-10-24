@@ -31,8 +31,8 @@ This project provides an installer and uninstaller for the **Sudachi** applicati
 
 ## Usage
 
-Run the generated `sudachi_installer_uninstaller.exe` to install or uninstall the applications. The uninstaller will clean up related directories. Or go into the Release Tab
-[Release]([https://github.com/Justinzzz69](https://github.com/Justinzzz69/Installer-for-Sudachi/releases/tag/sudachi))
+Run the generated `sudachi_installer_uninstaller.exe` to install or uninstall the applications. The uninstaller will clean up related directories. Or go into the Release Tab:
+[Release]([https://github.com/Justinzzz69](https://github.com/Justinzzz69/Installer-for-Sudachi/releases/tag/sudachi)
 
 ## Requirements
 
