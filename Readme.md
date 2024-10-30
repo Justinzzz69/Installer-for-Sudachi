@@ -15,7 +15,7 @@ This project provides an installer and uninstaller for the **Sudachi** applicati
 ## Installation
 
 1. Clone the repository:
-   ```bash
+   bash
    git clone https://github.com/Justinzzz69/sudachi_installer_uninstaller.git
    ```
 
