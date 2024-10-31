@@ -1,4 +1,0 @@
-py7zr
-requests
-tqdm
-colorama
