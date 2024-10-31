@@ -9,9 +9,10 @@ Ein einfaches Skript zur Installation von Sudachi, das automatisch erforderliche
 - Pakete: `requests`, `py7zr`, `tqdm`, `colorama`
 
 Installiere die Pakete mit:
-
-```bash
+```
+bash
 pip install requests py7zr tqdm colorama
+```
 
 
 ## Fehlerprotokollierung
