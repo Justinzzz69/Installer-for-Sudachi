@@ -14,10 +14,12 @@ import logging
 # Initialize Colorama for colored output
 colorama.init(autoreset=True)
 
+
 # Error logging function, logs only if there is an error
 def log_error(message):
     with open("sudachi_installer.log", "a") as log_file:
         log_file.write(f"{message}\n")
+
 
 # Download a file with progress bar and retry mechanism
 def download_file(url, save_path, retries=3, timeout=10):
@@ -47,6 +49,7 @@ def download_file(url, save_path, retries=3, timeout=10):
             attempt += 1
     return False  # Download failed after retries
 
+
 # Directory setup function
 def setup_directory(path):
     try:
@@ -56,6 +59,7 @@ def setup_directory(path):
     except PermissionError as e:
         log_error(f"Permission error creating {path}: {e}")
         return False
+
 
 # Main installation function
 def install_sudachi():
@@ -72,8 +76,9 @@ def install_sudachi():
 
     # Download Sudachi
     url_sudachi = "https://github.com/emuplace/sudachi.emuplace.app/releases/download/v1.0.11/sudachi-windows-v1.0.11.7z"
+    print(f"Downloading Sudachi...")
     if not download_file(url_sudachi, zip_path):
-        print(f"{Fore.RED}Error: Failed to download Sudachi after several attempts.")
+        print(f"{Fore.RED}Error: Failed to download {url_sudachi} after several attempts.")
         return
 
     # Extract the downloaded 7z archive
@@ -117,6 +122,7 @@ def install_sudachi():
 
     # Download and extract firmware
     firmware_zip = desktop_path / "firmware.zip"
+    print("Downloading firmware...")
     if not download_file(url_firmware, firmware_zip):
         print(f"{Fore.RED}Error: Failed to download firmware.")
         return
@@ -133,6 +139,7 @@ def install_sudachi():
 
     # Download and extract keys
     keys_zip = desktop_path / "Prodkeys.net_v19.0.0.zip"
+    print("Downloading keys...")
     if not download_file(url_keys, keys_zip):
         print(f"{Fore.RED}Error: Failed to download keys.")
         return
@@ -162,6 +169,7 @@ def install_sudachi():
     print(f"{Fore.GREEN}Installation complete!")
     print(f"\n{Fore.YELLOW}Made by Tapetenputzer")
     print(f"{Fore.YELLOW}Visit my GitHub: https://github.com/Justinzzz69")
+
 
 # Start installation
 if __name__ == "__main__":
