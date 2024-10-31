@@ -1,12 +1,6 @@
-import os
-import subprocess
+import PyInstaller.__main__
 
-# Define the name of the main script and output executable
-main_script = "main.py"
-output_exe = "sudachi_installer_uninstaller.exe"
-icon_file = "ico.ico"  # Icon file for the executable
-
-# Add all necessary hidden imports
+# Liste der versteckten Importe
 hidden_imports = [
     "os",
     "shutil",
@@ -19,13 +13,13 @@ hidden_imports = [
     "colorama"
 ]
 
-# Build the PyInstaller command
-hidden_imports_str = " ".join([f"--hidden-import={mod}" for mod in hidden_imports])
-command = f"pyinstaller --onefile {hidden_imports_str} --name {output_exe} --icon={icon_file} {main_script}"
+# Build main.py in eine ausführbare Datei
+PyInstaller.__main__.run([
+    'main.py',                 # Name des Hauptskripts
+    '--name=SudachiInstaller', # Name der ausführbaren Datei
+    '--onefile',               # Einzelne Datei erstellen
+    '--icon=icon.ico',         # Optional: Icon-Datei hinzufügen
+    *[f'--hidden-import={module}' for module in hidden_imports] # Versteckte Importe hinzufügen
+])
 
-# Execute the command
-try:
-    subprocess.run(command, shell=True, check=True)
-    print(f"{output_exe} has been successfully created with the icon!")
-except subprocess.CalledProcessError as e:
-    print(f"Error during compilation: {e}")
+print("Build abgeschlossen. Die ausführbare Datei befindet sich im Ordner 'dist'.")
