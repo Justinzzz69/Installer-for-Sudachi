@@ -1,69 +1,51 @@
-Hier ist eine Vorlage für die `README.md` Datei:
-
 ```markdown
 # Sudachi Installer
 
-Ein Installationsskript für die Sudachi-Software, inklusive Firmware und Keys, das auf einfache Weise die Installation, das Setup und das Entfernen von Sudachi automatisiert.
-
-## Features
-
-- Automatischer Download und Entpacken der benötigten Dateien (Sudachi, Firmware, Keys).
-- Fortschrittsanzeige während des Downloads.
-- Automatisches Starten und Schließen der `sudachi.exe`.
-- Saubere Organisation der Dateien und Ordner.
-- Nur bei Fehlern wird eine Logdatei erstellt (`sudachi_installer.log`).
-
-## Installation
-
-1. **Klonen Sie das Repository**:
-   ```bash
-   git clone https://github.com/Justinzzz69/SudachiInstaller.git
-   cd SudachiInstaller
-   ```
-
-2. **Benötigte Python-Pakete installieren**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Ausführen des Installers**:
-   ```bash
-   python build.py
-   ```
-
-4. **Auswahl des Vorgangs**: Sie können zwischen **Installation** und **Deinstallation** wählen.
-
-## Usage
-
-### Installation
-- Der Installer lädt die `sudachi.exe` herunter und entpackt sie auf dem Desktop im Ordner `sudachi`.
-- Die Firmware und die Keys werden automatisch in den entsprechenden Ordnern unter `AppData/Roaming/sudachi` gespeichert.
-
-### Deinstallation
-- Die Deinstallation entfernt alle Dateien und Ordner von Sudachi aus `AppData` und dem Desktop.
+Dies ist ein einfaches Installationsskript für Sudachi, das die erforderlichen Dateien und Firmware automatisch herunterlädt und installiert. Es erleichtert die Installation und Einrichtung von Sudachi auf deinem Computer.
 
 ## Anforderungen
 
-- Python 3.7 oder höher
-- Module: `os`, `shutil`, `py7zr`, `zipfile`, `requests`, `subprocess`, `pathlib`, `tqdm`, `colorama`
+- Python 3.6 oder höher
+- Die folgenden Python-Pakete:
+  - `requests`
+  - `py7zr`
+  - `zipfile`
+  - `tqdm`
+  - `colorama`
 
-## Build einer Exe-Datei
+Diese Pakete können mit dem folgenden Befehl installiert werden:
 
-Sie können das Skript mithilfe von PyInstaller in eine eigenständige `.exe`-Datei umwandeln:
+```bash
+pip install requests py7zr tqdm colorama
+```
 
-1. Führen Sie das `build.py` Skript aus:
+## Verwendung
+
+1. Klone das Repository oder lade die Dateien herunter.
+2. Führe das Skript `main.py` aus:
+
    ```bash
-   python build.py
+   python main.py
    ```
 
-2. Die ausführbare Datei wird im Ordner `dist` gespeichert.
+3. Das Skript wird automatisch die folgenden Schritte durchführen:
+   - Download von Sudachi
+   - Extraktion der Sudachi-Dateien
+   - Download und Extraktion der Firmware
+   - Download und Organisation der Schlüsseldateien (`prod.keys`)
 
-## Fehlersuche
+4. Am Ende wird Sudachi automatisch gestartet und anschließend geschlossen.
 
-Wenn ein Fehler auftritt, wird dieser in `sudachi_installer.log` protokolliert. Diese Datei wird nur erstellt, wenn ein Fehler während des Installationsprozesses auftritt.
+## Fehlerprotokollierung
 
-## Credits
+Wenn während des Installationsprozesses Fehler auftreten, werden diese in der Datei `sudachi_installer.log` protokolliert. Überprüfe diese Datei, um detaillierte Informationen über etwaige Probleme zu erhalten.
 
-**Made by Tapetenputzer**  
-GitHub: [Justinzzz69](https://github.com/Justinzzz69)
+## Hinweis
+
+- Stelle sicher, dass du über die erforderlichen Berechtigungen verfügst, um die Ordner zu erstellen und Dateien herunterzuladen.
+- Das Skript erstellt einen Ordner namens `sudachi` auf deinem Desktop und installiert alle erforderlichen Dateien dort.
+
+## Danksagungen
+
+Dieses Skript wurde von **Tapetenputzer** erstellt. Für weitere Informationen und den Quellcode, besuche bitte das [GitHub-Repository](https://github.com/Justinzzz69).
 ```
