@@ -28,7 +28,7 @@ Ein Installationsskript für die Sudachi-Software, inklusive Firmware und Keys, 
 
 3. **Ausführen des Installers**:
    ```bash
-   python main.py
+   python build.py
    ```
 
 4. **Auswahl des Vorgangs**: Sie können zwischen **Installation** und **Deinstallation** wählen.
