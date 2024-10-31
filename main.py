@@ -4,38 +4,58 @@ import py7zr
 import zipfile
 import requests
 import subprocess
+import time
 from pathlib import Path
 from tqdm import tqdm
 import colorama
 from colorama import Fore
+import logging
 
-# Initialize Colorama
+# Initialize Colorama for colored output
 colorama.init(autoreset=True)
 
-# Utility to download a file with progress bar
-def download_file(url, save_path):
-    response = requests.get(url, stream=True)
-    total_size = int(response.headers.get('content-length', 0))
-    block_size = 1024  # Block size for progress bar
+# Error logging function, logs only if there is an error
+def log_error(message):
+    with open("sudachi_installer.log", "a") as log_file:
+        log_file.write(f"{message}\n")
 
-    with open(save_path, 'wb') as file, tqdm(
-            desc=save_path.name,
-            total=total_size,
-            unit='B',
-            unit_scale=True,
-            unit_divisor=1024,
-            bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} ({rate_fmt})",
-            colour='green',
-    ) as progress_bar:
-        for chunk in response.iter_content(block_size):
-            file.write(chunk)
-            progress_bar.update(len(chunk))
+# Download a file with progress bar and retry mechanism
+def download_file(url, save_path, retries=3, timeout=10):
+    attempt = 0
+    while attempt < retries:
+        try:
+            response = requests.get(url, stream=True, timeout=timeout)
+            response.raise_for_status()  # Raise error for bad status codes
+            total_size = int(response.headers.get('content-length', 0))
+            block_size = 1024  # 1 KB
 
-# Utility to create directories
+            with open(save_path, 'wb') as file, tqdm(
+                    desc=f"Downloading {save_path.name}",
+                    total=total_size,
+                    unit='B',
+                    unit_scale=True,
+                    unit_divisor=1024,
+                    bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} ({rate_fmt})",
+                    colour='cyan'
+            ) as progress_bar:
+                for chunk in response.iter_content(block_size):
+                    file.write(chunk)
+                    progress_bar.update(len(chunk))
+            return True  # Successful download
+        except (requests.exceptions.RequestException, IOError) as e:
+            print(f"{Fore.RED}Download attempt {attempt + 1} failed: {e}")
+            attempt += 1
+    return False  # Download failed after retries
+
+# Directory setup function
 def setup_directory(path):
-    if not path.exists():
-        path.mkdir(parents=True, exist_ok=True)
-    return path.exists()
+    try:
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
+        return path.exists()
+    except PermissionError as e:
+        log_error(f"Permission error creating {path}: {e}")
+        return False
 
 # Main installation function
 def install_sudachi():
@@ -50,115 +70,99 @@ def install_sudachi():
         print(f"{Fore.RED}Error: Could not create the folder {sudachi_folder_path}.")
         return
 
-    # Download URL
+    # Download Sudachi
     url_sudachi = "https://github.com/emuplace/sudachi.emuplace.app/releases/download/v1.0.11/sudachi-windows-v1.0.11.7z"
-    print(f"Downloading Sudachi from {url_sudachi}...")
-    download_file(url_sudachi, zip_path)
+    if not download_file(url_sudachi, zip_path):
+        print(f"{Fore.RED}Error: Failed to download Sudachi after several attempts.")
+        return
 
-    # Extract the downloaded 7z archive to the sudachi folder
+    # Extract the downloaded 7z archive
     print(f"Extracting the downloaded file to {sudachi_folder_path}...")
-    with py7zr.SevenZipFile(zip_path, 'r') as archive:
-        archive.extractall(path=sudachi_folder_path)
-    os.remove(zip_path)  # Delete the original 7z file
+    try:
+        with py7zr.SevenZipFile(zip_path, 'r') as archive:
+            archive.extractall(path=sudachi_folder_path)
+        os.remove(zip_path)  # Delete the original 7z file
+    except (py7zr.Bad7zFile, IOError) as e:
+        log_error(f"Extraction error: {e}")
+        print(f"{Fore.RED}Error extracting the file: {e}")
+        return
     print("File successfully extracted!")
 
+    # Automatically launch and close Sudachi
     sudachi_exe_path = sudachi_folder_path / "sudachi.exe"
-
     if sudachi_exe_path.exists():
         print(f"Launching Sudachi: {sudachi_exe_path}")
-        process = subprocess.Popen([sudachi_exe_path])
-        print(f"Please close Sudachi to continue the installation...")
-        process.wait()
-        print("Sudachi has been closed. Continuing...")
+        try:
+            process = subprocess.Popen([sudachi_exe_path])
+            time.sleep(2)  # Wait before closing
+            process.terminate()  # Close the process
+            print(f"{Fore.GREEN}Sudachi launched and closed successfully.")
+        except Exception as e:
+            log_error(f"Error launching Sudachi: {e}")
+            print(f"{Fore.RED}Error launching Sudachi: {e}")
+            return
     else:
+        log_error("sudachi.exe not found after extraction.")
         print(f"{Fore.RED}Error: sudachi.exe not found.")
         return
 
-    # Download and extract additional files (firmware and keys)
-    url_firmware = "https://github.com/THZoria/NX_Firmware/releases/download/18.1.0/Firmware.18.1.0.zip"
-    url_keys = "https://usc1.contabostorage.com/b14312a874cd4fb8812c5c8860564d3a:prodkeysnet/ProdKeys.net-v18.-1-0.zip"
-
+    # Firmware and keys download paths
+    url_firmware = "https://github.com/THZoria/NX_Firmware/releases/download/19.0.0/Firmware.19.0.0.zip"
+    url_keys = "https://files-prodkeys.b-cdn.net/prodkeys/Prodkeys.net_v19.0.0.zip"
     firmware_path = Path.home() / "AppData/Roaming/sudachi/nand/system/Contents/registered"
     keys_path = Path.home() / "AppData/Roaming/sudachi/keys"
 
-    if not setup_directory(firmware_path):
-        print(f"{Fore.RED}Error: Could not create the folder {firmware_path}.")
-        return
-    if not setup_directory(keys_path):
-        print(f"{Fore.RED}Error: Could not create the folder {keys_path}.")
+    if not setup_directory(firmware_path) or not setup_directory(keys_path):
         return
 
-    print("Downloading firmware...")
+    # Download and extract firmware
     firmware_zip = desktop_path / "firmware.zip"
-    download_file(url_firmware, firmware_zip)
+    if not download_file(url_firmware, firmware_zip):
+        print(f"{Fore.RED}Error: Failed to download firmware.")
+        return
     print("Extracting firmware...")
-    with zipfile.ZipFile(firmware_zip, 'r') as zip_ref:
-        zip_ref.extractall(firmware_path)
-    os.remove(firmware_zip)  # Delete the ZIP file after extraction
+    try:
+        with zipfile.ZipFile(firmware_zip, 'r') as zip_ref:
+            zip_ref.extractall(firmware_path)
+        os.remove(firmware_zip)
+    except (zipfile.BadZipFile, IOError) as e:
+        log_error(f"Error extracting firmware: {e}")
+        print(f"{Fore.RED}Error extracting firmware: {e}")
+        return
     print("Firmware successfully downloaded and extracted!")
 
-    print("Downloading keys...")
-    keys_zip = desktop_path / "ProdKeys.net-v18.-1-0.zip"
-    download_file(url_keys, keys_zip)
+    # Download and extract keys
+    keys_zip = desktop_path / "Prodkeys.net_v19.0.0.zip"
+    if not download_file(url_keys, keys_zip):
+        print(f"{Fore.RED}Error: Failed to download keys.")
+        return
+    print("Extracting keys...")
+    try:
+        with zipfile.ZipFile(keys_zip, 'r') as zip_ref:
+            zip_ref.extractall(keys_path)
+        os.remove(keys_zip)
 
-    if keys_zip.exists():
-        print("Extracting keys...")
-        try:
-            with zipfile.ZipFile(keys_zip, 'r') as zip_ref:
-                zip_ref.extractall(keys_path)
-            os.remove(keys_zip)  # Delete the ZIP file after extraction
-            print("Keys successfully downloaded and extracted!")
-        except zipfile.BadZipFile:
-            print(f"{Fore.RED}Error: The ZIP file is corrupted.")
-        except Exception as e:
-            print(f"{Fore.RED}Error extracting keys: {e}")
-    else:
-        print(f"{Fore.RED}Error: Keys ZIP file not found.")
+        # Move prod.keys to main keys directory and cleanup
+        extracted_key_folder = keys_path / "Prodkeys.net_v19.0.0"
+        prod_key_file = extracted_key_folder / "prod.keys"
 
+        if prod_key_file.exists():
+            shutil.move(str(prod_key_file), str(keys_path))
+            shutil.rmtree(extracted_key_folder)  # Clean up folder
+            print("Keys successfully downloaded, extracted, and organized!")
+        else:
+            log_error("prod.keys file not found in extracted folder.")
+            print(f"{Fore.RED}Error: prod.keys file not found.")
+    except (zipfile.BadZipFile, IOError) as e:
+        log_error(f"Error extracting keys: {e}")
+        print(f"{Fore.RED}Error extracting keys: {e}")
+
+    # Final credits message
     print(f"{Fore.CYAN}All files successfully downloaded and processed.\n")
+    print(f"{Fore.GREEN}Installation complete!")
+    print(f"\n{Fore.YELLOW}Made by Tapetenputzer")
+    print(f"{Fore.YELLOW}Visit my GitHub: https://github.com/Justinzzz69")
 
-# Uninstaller function
-def uninstall_sudachi():
-    print(f"{Fore.CYAN}Starting the uninstallation...")
-
-    desktop_path = Path.home() / "Desktop"
-    sudachi_folder_path = desktop_path / "sudachi"
-    appdata_paths = [
-        Path.home() / "AppData/Roaming/sudachi",
-        Path.home() / "AppData/Local/sudachi",
-        Path.home() / "AppData/LocalLow/sudachi",
-        Path.home() / "AppData/Roaming/suyu",
-        Path.home() / "AppData/Local/suyu",
-        Path.home() / "AppData/LocalLow/suyu",
-        Path.home() / "AppData/Roaming/yuzu",
-        Path.home() / "AppData/Local/yuzu",
-        Path.home() / "AppData/LocalLow/yuzu",
-    ]
-
-    # Check and delete directories on the desktop
-    if sudachi_folder_path.exists() and sudachi_folder_path.is_dir():
-        print(f"Deleting folder: {sudachi_folder_path}")
-        shutil.rmtree(sudachi_folder_path)
-
-    # Check and delete directories in AppData
-    for path in appdata_paths:
-        if path.exists() and path.is_dir():
-            print(f"Deleting folder: {path}")
-            shutil.rmtree(path)
-
-    print(f"{Fore.GREEN}Uninstallation complete!")
-
-    # Footer with credit
-    print(f"\nMade by Tapetenputzer")
-    print(f"Visit my GitHub: https://github.com/Justinzzz69")
-    input("Press Enter to exit...")
-
-# Main entry point
+# Start installation
 if __name__ == "__main__":
-    choice = input("Do you want to (I)nstall or (U)ninstall Sudachi? ").strip().lower()
-    if choice == "i":
-        install_sudachi()
-    elif choice == "u":
-        uninstall_sudachi()
-    else:
-        print("Invalid choice, exiting...")
+    install_sudachi()
