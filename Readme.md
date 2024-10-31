@@ -26,7 +26,7 @@ pip install requests py7zr tqdm colorama
 
    ```bash
    python main.py
-   ```
+   
 
 3. Das Skript wird automatisch die folgenden Schritte durchführen:
    - Download von Sudachi
