@@ -24,10 +24,4 @@ Ein Skript zur automatischen Installation von Sudachi, das die Software, Firmwar
 
 ## Fehlerprotokoll
 
-Fehler werden nur bei Bedarf in `sudachi_installer.log` gespeichert.
-
-## Danksagungen
-
-Erstellt von **Tapetenputzer**  
-[GitHub](https://github.com/Justinzzz69)
 ```
