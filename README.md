@@ -22,4 +22,6 @@ Ein Skript zur automatischen Installation von Sudachi, das die Software, Firmwar
 - **Entpacken und Konfigurieren**: Die heruntergeladenen Dateien werden in die entsprechenden Verzeichnisse entpackt.
 - **Fehlerprotokollierung**: Bei Problemen wird eine Logdatei `sudachi_installer.log` erstellt.
 
+## Youtube Tutorial ohne den Installer
+https://youtu.be/mo5QFAog-AQ?si=A5XGgL2Xa-pdlRR0
 
